@@ -57,6 +57,42 @@ function addSection() {
 }
 
 // TODO Delete section
+/**
+ * Removes the section from the article
+ * @param {object} section The section that should be deleted
+ */
+function handleDelete(section) {
+  // Get index of section in article
+  const indexSection = findArticleSectionIndex(section.id);
+
+  // TODO Save section object to store in case user wants to undo delete
+  // ...
+
+  // If a section that ought to be unique gets deleted, set its disabled prop to true to make it selectable again
+  if (state.value.uniqueSections.includes(section.name)) {
+    const index = findIndexOfUniqueSection(section.name);
+    setDisabledOnSectionsToSelect(index, false);
+  }
+
+  // If deleted sections was an image, check whether is_title_image was checked
+  if (section.name === 'image') {
+    const isTitleImage = document.querySelector(`#imageTitleImage-${section.id}`).checked;
+
+    if (isTitleImage) {
+      [...getAllTitleImageCheckboxes()].forEach(checkbox => checkbox.disabled = false);
+    }
+  }
+
+  deleteSection(indexSection);
+}
+
+/**
+ * Deletes the section object from the articleForForm array
+ * @param {number} indexSection The index of the section in the articleFormForm array
+ */
+function deleteSection(indexSection) {
+  articleForForm.value.splice(indexSection, 1);
+}
 
 // SELECT
 /**
@@ -91,6 +127,21 @@ function handleNewSelect(newSelect, sectionId) {
 
   // Reset section after other option was selected
   resetSectionAfterSelectChange(state.value.previousSelect, sectionId);
+
+  if (newSelect === 'image') {
+    // 1. Get all titleImage checkboxes
+    // 2. Check if one of them is checked
+    const hasTitleImage = [...getAllTitleImageCheckboxes()].some(({ checked }) => checked === true);
+
+    // If one is already checked, disable titleImage checkbox on this new image section
+    if (hasTitleImage) {
+      // setTimeout needed for checkbox to render
+      const titleImageTimeout = setTimeout(() => {
+        document.querySelector(`#imageTitleImage-${sectionId}`).disabled = true;
+        clearTimeout(titleImageTimeout);
+      }, 150);
+    }
+  }
 }
 
 /**
@@ -301,11 +352,20 @@ disableSectionsBasedOnArticle();
               <textarea name="" id="" cols="30" rows="2"></textarea>
             </div>
           </template>
+
+          <!-- DELETE SECTION -->
+          <div>
+            <button
+              @click="handleDelete(element)"
+              type="button">
+              Delete
+            </button>
+          </div>
         </div>
       </template>
     </draggable>
 
-    <!-- Add section -->
+    <!-- ADD SECTION -->
     <div>
       <button
         @click="addSection"
