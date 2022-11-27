@@ -238,6 +238,39 @@ function getAllTitleImageCheckboxes() {
   return document.querySelectorAll(`[id^="imageTitleImage"]`);
 }
 
+// LISTARRAY SECTION
+/**
+ * Adds an empty item object to the items array of a listarray section
+ * @param {number} sectionId The id of the listarray section
+ */
+function addListArrayItem(sectionId) {
+  // Find index of listarray section with id
+  const indexListArray = findArticleSectionIndex(sectionId);
+  // Check whether items array already exists else create it
+  if (articleForForm.value[indexListArray].items === undefined) articleForForm.value[indexListArray].items = [];
+  // Push new empty item to listarray section with that id
+  articleForForm.value[indexListArray].items.push({
+    value: ''
+  });
+  // Find out index of added item
+  const indexItem = articleForForm.value[indexListArray].items.length - 1;
+  // Select added listarray item input
+  selectListarrayInput(sectionId, indexItem);
+}
+
+/**
+ * Focuses the input of a newly added listarray item
+ * @param {number} sectionId The id of the listarray section 
+ * @param {number} indexItem The index of the newly added item
+ */
+function selectListarrayInput(sectionId, indexItem) {
+  const selectTimeout = setTimeout(() => {
+    const listarrayItemInput = document.querySelector(`#listarrayItems-${sectionId}-Item${indexItem}`);
+    listarrayItemInput.focus();
+    clearTimeout(selectTimeout);
+  }, 150);
+}
+
 // Create deep template copy
 // NOTE: Can be skipped if template logic will not be implemented
 const articleForForm = ref(JSON.parse(JSON.stringify(state.value.templateBasic)));
@@ -332,7 +365,14 @@ disableSectionsBasedOnArticle();
                 <legend>Items</legend>
                 <div>
                   <!-- Loop through items -->
-                  <div></div>
+                  <div v-for="(item, i) in element.items" :key="`${element.name}Items-${element.id}`">
+                    <div>
+                      <label :for="`${element.name}Items-${element.id}-Item${i}`">{{ i + 1 }}</label>
+                      <textarea v-model.trim="item.value" :name="`${element.name}Items-${element.id}-Item${i}`" :id="`${element.name}Items-${element.id}-Item${i}`" cols="30" rows="1"></textarea>
+                    </div>
+                    <button @click="deleteListArrayItem(element.id, i)" type="button">DEL</button>
+                  </div>
+                  <button @click="addListArrayItem(element.id)" type="button">+ Item</button>
                 </div>
               </fieldset>
             </div>
