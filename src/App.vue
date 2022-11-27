@@ -259,6 +259,20 @@ function addListArrayItem(sectionId) {
 }
 
 /**
+ * Removes an item from a listarray array
+ * @param {number} sectionId The id of the listarray section
+ * @param {number} indexItem The index of the newly added item
+ */
+function deleteListArrayItem(sectionId, indexItem) {
+  // Find index of listarray section with sectionId
+  const indexListArray = findArticleSectionIndex(sectionId);
+  // Delete item in listarray
+  articleForForm.value[indexListArray].items.splice(indexItem, 1);
+  // TODO Update listarray shrunk section
+  // this.handleInputForShrunkSections(sectionId);
+}
+
+/**
  * Focuses the input of a newly added listarray item
  * @param {number} sectionId The id of the listarray section 
  * @param {number} indexItem The index of the newly added item
