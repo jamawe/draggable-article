@@ -402,8 +402,8 @@ disableSectionsBasedOnArticle();
           <!-- HEADING / PARAGRAPH / SUBHEADING / SUMMARY SECTION -->
           <template v-else>
             <div>
-              <label for="">Content</label>
-              <textarea name="" id="" cols="30" rows="2"></textarea>
+              <label :for="`${element.name}Content-${element.id}`">Content</label>
+              <textarea v-model.trim="element.value" :name="`${element.name}Content-${element.id}`" :id="`${element.name}Content-${element.id}`" cols="30" rows="2"></textarea>
             </div>
           </template>
 
