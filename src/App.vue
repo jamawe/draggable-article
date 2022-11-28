@@ -4,7 +4,7 @@
 import draggable from 'vuedraggable';
 import { generateId } from './modules/_helpers.mjs';
 
-import { ref } from "vue";
+import { computed, ref } from "vue";
 
 const state = ref({
   templateBasic: [
@@ -214,6 +214,10 @@ function handleImage(filesArray, sectionId) {
   // Select DOM elements relevant to display image upload progress
   const imagePreview = document.querySelector(`#imagePreview-${sectionId}`);
   imagePreview.src = URL.createObjectURL(file);
+
+  // Find index of listarray section with id
+  const indexImage = findArticleSectionIndex(sectionId);
+  articleForForm.value[indexImage].url = imagePreview.src;
 }
 
 /**
@@ -506,7 +510,75 @@ function deleteTableCells(indexTable, columnName) {
 // Create deep template copy
 // NOTE: Can be skipped if template logic will not be implemented
 const articleForForm = ref(JSON.parse(JSON.stringify(state.value.templateBasic)));
-const articleForDisplay = []; // Derive from articleForForm (const bla = computed() => {return stuff})
+const articleForDisplay = computed(() => {
+  let hasTitleImage = false;
+  let titleImageSectionId;
+
+  const derivedArticleForDisplay = articleForForm.value.map(element => {
+    const section = {
+      name: '',
+    };
+    section.name = element.name;
+
+    // Handle image
+    if (element.name === 'image') {
+      section.url = element.url;
+      section.is_title_image = element.is_title_image;
+      section.alt = element.alt;
+      section.height = element.height_field;
+      section.width = element.width_field;
+
+      if (section.is_title_image) {
+        hasTitleImage = true;
+        titleImageSectionId = element.id;
+      }
+      if (element.is_title_image === undefined) element.is_title_image = false;
+
+      return section;
+    }
+
+    // Handle listarray
+    if (element.name === 'listarray' && element.items?.length) {
+      section.items = element.items.map(({ value }) => value);
+      return section;
+    }
+
+    // Table section
+    if (element.name === 'table' && element.columns) {
+      // Save columns object prop 'name' as string in new array
+      section.tableHead = element.columns.map(({ name }) => name);
+
+      if (element.rows?.length) {
+        section.rows = [];
+        // Loop through rows array
+        for (const item of element.rows) {
+          const row = [];
+          // Loop trhough objects of rows array + push value of each prop to own array 'row'
+          for (const cell in item) {
+              row.push(item[cell]);
+          }
+          // Push row array containing table cell content to rows array (creating an array of arrays)
+          section.rows.push(row);
+        }
+      }
+      return section;
+    }
+
+    // Handle heading, paragraph, subheading, summary
+    section.value = element.value;
+                    
+    return section;
+  });
+
+  // The image section with the title image needs to come first
+  if (hasTitleImage) {
+    const i = findArticleSectionIndex(titleImageSectionId);
+    const sectionWithTitleImage = derivedArticleForDisplay.splice(i, 1);
+    derivedArticleForDisplay.unshift(sectionWithTitleImage[0]);
+  }
+
+  return derivedArticleForDisplay;
+});
 
 disableSectionsBasedOnArticle();
 </script>
@@ -677,7 +749,8 @@ disableSectionsBasedOnArticle();
       </button>
     </div>
 
-    {{articleForForm}}
+    <!-- {{articleForForm}} -->
+    {{ articleForDisplay }}
 
   </div>
   
