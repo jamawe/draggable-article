@@ -600,12 +600,12 @@ disableSectionsBasedOnArticle();
       <draggable
         v-model="articleForForm"
         item-key="id"
-        @start="drag=true" @end="drag=false">
+        @start="drag=true" @end="drag=false" :delay="200" :delayOnTouchOnly="true" :touchStartThreshold="4" :animation="150" filter=".ignore-drag" :preventOnFilter="false">
         <template #item="{ element }">
           <div class="main">
             <div class="section section-collapsed" :data-section-collapsed="element.id">
               <!-- EXPAND SECTION -->
-              <button @click="collapseSection(element.id)" type="button" class="button-collapse">
+              <button @click="collapseSection(element.id)" type="button" class="button-collapse ignore-drag">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="icon">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
                 </svg>
@@ -618,7 +618,7 @@ disableSectionsBasedOnArticle();
 
             <div class="section section-expanded" :data-section-expanded="element.id">
               <!-- COLLAPSE SECTION -->
-              <button @click="collapseSection(element.id)" type="button" class="button-collapse">
+              <button @click="collapseSection(element.id)" type="button" class="button-collapse ignore-drag">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="icon">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5" />
                 </svg>
@@ -630,7 +630,7 @@ disableSectionsBasedOnArticle();
                   v-model="element.name" :name="`name-${element.id}`" :id="`name-${element.id}`"
                   @focus="setPreviousSelect($event.target.value)"
                   @change="handleNewSelect($event.target.value, element.id)"
-                  class="select">
+                  class="select ignore-drag">
                   <option value selected disabled >Choose A Section</option>
                   <option
                     v-for="(section, i) in state.sectionsToSelect"
@@ -649,7 +649,7 @@ disableSectionsBasedOnArticle();
               <template v-else-if="element.name === 'image'">
                 <!-- Button to choose image -->
                 <div class="row">
-                  <label :for="`imageFile_${element.id}`" class="label label-file">
+                  <label :for="`imageFile_${element.id}`" class="label label-file ignore-drag">
                     <span>Choose Image</span>
                   </label>
                   <input
@@ -658,14 +658,12 @@ disableSectionsBasedOnArticle();
                     :name="`imageFile_${element.id}`"
                     :id="`imageFile_${element.id}`"
                     accept="image/*"
-                    class="input-file">
+                    class="input-file ignore-drag">
                 </div>
                 <!-- Preview with progress bar -->
                 <div class="row">
                   <img src="" :id="`imagePreview-${element.id}`" class="image">
                 </div>
-                <!-- Name -->
-                <!-- <div></div> -->
                 <!-- Alt text -->
                 <div class="row">
                   <label :for="`imageAlt-${element.id}`" class="label">Alternative text</label>
@@ -673,11 +671,11 @@ disableSectionsBasedOnArticle();
                     v-model.trim="element.alt"
                     :name="`imageAlt-${element.id}`"
                     :id="`imageAlt-${element.id}`"
-                    class="textarea"></textarea>
+                    class="textarea ignore-drag"></textarea>
                 </div>
                 <!-- Title image -->
                 <div class="row">
-                  <label :for="`imageTitleImage-${element.id}`" class="label checkbox">
+                  <label :for="`imageTitleImage-${element.id}`" class="label checkbox ignore-drag">
                     <span class="label-checkbox-text">Title image</span>
                     <input
                       v-model="element.is_title_image"
@@ -697,14 +695,14 @@ disableSectionsBasedOnArticle();
                       <!-- Loop through items -->
                       <div v-for="(item, i) in element.items" :key="`${element.name}Items-${element.id}`" class="container-item">
                         <label :for="`${element.name}Items-${element.id}-Item${i}`" class="label container-item-label">{{ i + 1 }}</label>
-                        <textarea v-model.trim="item.value" :name="`${element.name}Items-${element.id}-Item${i}`" :id="`${element.name}Items-${element.id}-Item${i}`"  class="textarea container-item-textarea"></textarea>
-                        <button @click="deleteListArrayItem(element.id, i)" type="button" class="button-delete">
+                        <textarea v-model.trim="item.value" :name="`${element.name}Items-${element.id}-Item${i}`" :id="`${element.name}Items-${element.id}-Item${i}`"  class="textarea container-item-textarea ignore-drag"></textarea>
+                        <button @click="deleteListArrayItem(element.id, i)" type="button" class="button-delete ignore-drag">
                           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="icon">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
                           </svg>
                         </button>
                       </div>
-                      <button @click="addListArrayItem(element.id)" type="button" class="button-add">+ Item</button>
+                      <button @click="addListArrayItem(element.id)" type="button" class="button-add ignore-drag">Add Item</button>
                     </div>
                   </fieldset>
                 </div>
@@ -720,15 +718,15 @@ disableSectionsBasedOnArticle();
                       <div v-for="(column, i) in element.columns"
                         :key="`${element.name}Cols-${element.id}`" class="grid-item grid-item-columns">
                         <label :for="`${element.name}Col${i}-${element.id}`" class="label label-columns">Column {{ i + 1 }}</label>
-                        <input v-model.trim="column.name" @focus="saveColumnName(column.name)" @blur="handleColumnInput($event, element.id, i)" type="text" :name="`${element.name}Col${i}-${element.id}`" :id="`${element.name}Col${i}-${element.id}`" :placeholder="`Column ${i + 1}`" class="input">
-                        <button @click="deleteTableColumn(element.id, i)" type="button" class="button-delete button-delete-grid-item">
+                        <input v-model.trim="column.name" @focus="saveColumnName(column.name)" @blur="handleColumnInput($event, element.id, i)" type="text" :name="`${element.name}Col${i}-${element.id}`" :id="`${element.name}Col${i}-${element.id}`" :placeholder="`Column ${i + 1}`" class="input ignore-drag">
+                        <button @click="deleteTableColumn(element.id, i)" type="button" class="button-delete button-delete-grid-item ignore-drag">
                           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="icon">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
                           </svg>
                         </button>
                       </div>
                     </div>
-                    <button @click="addTableColumn(element.id)" type="button" :id="`${element.name}ColumnBtn-${element.id}`" class="button-add">+ Col</button>
+                    <button @click="addTableColumn(element.id)" type="button" :id="`${element.name}ColumnBtn-${element.id}`" class="button-add ignore-drag">Add Column</button>
                   </fieldset>
                 </div>
                 <!-- ROWS -->
@@ -743,17 +741,17 @@ disableSectionsBasedOnArticle();
                         <div class="grid-nested">
                           <template v-for="(cell, j) in element.columns">
                             <label :for="`${element.name}Row${i}-Col${j}-${element.id}`" class="label-visually-hidden"></label>
-                            <input v-model.trim="row[`${element.columns[j].name}`]" type="text" :name="`${element.name}Row${i}-Col${j}-${element.id}`" :id="`${element.name}Row${i}-Col${j}-${element.id}`" :placeholder="element.columns[j].name" class="input grid-nested-item">
+                            <input v-model.trim="row[`${element.columns[j].name}`]" type="text" :name="`${element.name}Row${i}-Col${j}-${element.id}`" :id="`${element.name}Row${i}-Col${j}-${element.id}`" :placeholder="element.columns[j].name" class="input grid-nested-item ignore-drag">
                           </template>
                         </div>
-                        <button @click="deleteTableRow(element.id, i)" type="button" class="button-delete button-delete-grid-item">
+                        <button @click="deleteTableRow(element.id, i)" type="button" class="button-delete button-delete-grid-item ignore-drag">
                           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="icon">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
                           </svg>
                         </button>
                       </div>
                     </div>
-                    <button @click="addTableRow(element.id)" type="button" class="button-add">+ Row</button>
+                    <button @click="addTableRow(element.id)" type="button" class="button-add ignore-drag">Add Row</button>
                   </fieldset>
                 </div>
               </template>
@@ -761,7 +759,7 @@ disableSectionsBasedOnArticle();
               <template v-else>
                 <div class="row">
                   <label :for="`${element.name}Content-${element.id}`" class="label">Content</label>
-                  <textarea v-model.trim="element.value" :name="`${element.name}Content-${element.id}`" :id="`${element.name}Content-${element.id}`" class="textarea"></textarea>
+                  <textarea v-model.trim="element.value" :name="`${element.name}Content-${element.id}`" :id="`${element.name}Content-${element.id}`" class="textarea ignore-drag"></textarea>
                 </div>
               </template>
               <!-- DELETE SECTION -->
@@ -769,7 +767,7 @@ disableSectionsBasedOnArticle();
                 <button
                   @click="handleDelete(element)"
                   type="button"
-                  class="button-delete">
+                  class="button-delete ignore-drag">
                   Delete
                 </button>
               </div>
@@ -783,7 +781,7 @@ disableSectionsBasedOnArticle();
           @click="addSection"
           type="button"
           class="form-button">
-            + Section
+            Add Section
         </button>
       </div>
       <!-- {{articleForForm}} -->
