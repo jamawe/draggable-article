@@ -8,9 +8,9 @@ import { computed, ref } from "vue";
 
 const state = ref({
   templateBasic: [
-    { name: 'heading', value: '', id: generateId(), errors: { value: '' } },
-    { name: 'summary', value: '', id: generateId(), errors: { value: '' } },
-    { name: 'paragraph', value: '', id: generateId(), errors: { value: '' } },
+    { name: 'heading', value: '', id: generateId() },
+    { name: 'summary', value: '', id: generateId() },
+    { name: 'paragraph', value: '', id: generateId() },
   ],
   sectionsToSelect: [
     { name: 'heading', disabled: false },
@@ -28,6 +28,18 @@ const state = ref({
 });
 
 // GENERAL
+/**
+ * Collapses or expands a section by changing its CSS display property.
+ * @param {number} sectionId The id of the section
+ */
+function collapseSection(sectionId) {
+  const sectionExpanded = document.querySelector(`[data-section-expanded="${sectionId}"]`);
+  const sectionCollapsed = document.querySelector(`[data-section-collapsed="${sectionId}"]`);
+
+  sectionExpanded.style.display = window.getComputedStyle(sectionExpanded).display === 'none' ? 'flex' : 'none';
+  sectionCollapsed.style.display = window.getComputedStyle(sectionCollapsed).display === 'none' ? 'flex' : 'none';
+}
+
 /**
  * Sets disabled props in objects of sectionsToSelect array to false based on unique sections already existing in articleForForm
  */
@@ -54,11 +66,10 @@ function findArticleSectionIndex(sectionId) {
  * Adds an empty section object to the articleForForm array
  */
 function addSection() {
-  const newSection = { name: '', id: generateId(), errors: { value: '' } };
+  const newSection = { name: '', id: generateId() };
   articleForForm.value.push(newSection);
 }
 
-// TODO Delete section
 /**
  * Removes the section from the article
  * @param {object} section The section that should be deleted
@@ -274,7 +285,7 @@ function deleteListArrayItem(sectionId, indexItem) {
   const indexListArray = findArticleSectionIndex(sectionId);
   // Delete item in listarray
   articleForForm.value[indexListArray].items.splice(indexItem, 1);
-  // TODO Update listarray shrunk section
+  // TODO Update listarray collapsed section
   // this.handleInputForShrunkSections(sectionId);
 }
 
@@ -334,7 +345,7 @@ function deleteTableColumn(sectionId, indexColumn) {
   deleteTableCells(indexTable, columnName);
   // Enable button for adding columns
   disableTableColumnButton(false, sectionId);
-  // Update table shrunk section
+  // Update table collapsed section
   // this.handleInputForShrunkSections(sectionId);
 }
 
@@ -425,7 +436,7 @@ function handleColumnInput(e, sectionId, indexColumn) {
     // Update row objects with provisional name
     updateRowProps(provisonalColumnName, state.value.previousColumnName, indexTable);
     // TODO
-    // Update table shrunk object
+    // Update table collapsed object
     // this.handleInputForShrunkSections(sectionId);
     return;
   }
@@ -591,156 +602,177 @@ disableSectionsBasedOnArticle();
         item-key="id"
         @start="drag=true" @end="drag=false">
         <template #item="{ element }">
-          <div class="section">
-            <!-- SELECT SECTION -->
-            <div class="row">
-              <label :for="`name-${element.id}`" class="label">Section</label>
-              <select
-                v-model="element.name" :name="`name-${element.id}`" :id="`name-${element.id}`"
-                @focus="setPreviousSelect($event.target.value)"
-                @change="handleNewSelect($event.target.value, element.id)"
-                class="select">
-                <option value selected disabled >Choose A Section</option>
-                <option
-                  v-for="(section, i) in state.sectionsToSelect"
-                  :key="i"
-                  :value="section.name"
-                  :disabled="section.disabled">{{ section.name }}</option>
-              </select>
-            </div>
-            <!-- NO SECTION YET -->
-            <template v-if="element.name === ''">
-              <div class="row">
-                <p class="paragraph">Please remember to choose a section.</p>
-              </div>
-            </template>
-            <!-- IMAGE SECTION -->
-            <template v-else-if="element.name === 'image'">
-              <!-- Button to choose image -->
-              <div class="row">
-                <label :for="`imageFile_${element.id}`" class="label label-file">
-                  <span>Choose Image</span>
-                </label>
-                <input
-                  @change="handleImage($event.target.files, element.id)"
-                  type="file"
-                  :name="`imageFile_${element.id}`"
-                  :id="`imageFile_${element.id}`"
-                  accept="image/*"
-                  class="input-file">
-              </div>
-              <!-- Preview with progress bar -->
-              <div class="row">
-                <img src="" :id="`imagePreview-${element.id}`" class="image">
-              </div>
-              <!-- Name -->
-              <!-- <div></div> -->
-              <!-- Alt text -->
-              <div class="row">
-                <label :for="`imageAlt-${element.id}`" class="label">Alternative text</label>
-                <textarea
-                  v-model.trim="element.alt"
-                  :name="`imageAlt-${element.id}`"
-                  :id="`imageAlt-${element.id}`"
-                  class="textarea"></textarea>
-              </div>
-              <!-- Title image -->
-              <div class="row">
-                <label :for="`imageTitleImage-${element.id}`" class="label checkbox">
-                  <span class="label-checkbox-text">Title image</span>
-                  <input
-                    v-model="element.is_title_image"
-                    @change="handleCheckboxAction($event.target._modelValue, element.id)"
-                    type="checkbox"
-                    :name="`imageTitleImage-${element.id}`"
-                    :id="`imageTitleImage-${element.id}`">
-                </label>
-              </div>
-            </template>
-            <!-- LISTARRAY SECTION -->
-            <template v-else-if="element.name === 'listarray'">
-              <div class="row">
-                <fieldset class="fieldset">
-                  <legend class="label label-legend">Items</legend>
-                  <div class="container">
-                    <!-- Loop through items -->
-                    <div v-for="(item, i) in element.items" :key="`${element.name}Items-${element.id}`" class="container-item">
-                      <label :for="`${element.name}Items-${element.id}-Item${i}`" class="label container-item-label">{{ i + 1 }}</label>
-                      <textarea v-model.trim="item.value" :name="`${element.name}Items-${element.id}-Item${i}`" :id="`${element.name}Items-${element.id}-Item${i}`"  class="textarea container-item-textarea"></textarea>
-                      <button @click="deleteListArrayItem(element.id, i)" type="button" class="button-delete">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="icon">
-                          <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
-                        </svg>
-                      </button>
-                    </div>
-                    <button @click="addListArrayItem(element.id)" type="button" class="button-add">+ Item</button>
-                  </div>
-                </fieldset>
-              </div>
-            </template>
-            <!-- TABLE SECTION -->
-            <template v-else-if="element.name === 'table'">
-              <!-- COLUMNS -->
-              <div class="row">
-                <fieldset class="fieldset">
-                  <legend class="label label-legend">Columns</legend>
-                  <div v-if="element.columns" class="grid">
-                    <!-- Loop through columns -->
-                    <div v-for="(column, i) in element.columns"
-                      :key="`${element.name}Cols-${element.id}`" class="grid-item grid-item-columns">
-                      <label :for="`${element.name}Col${i}-${element.id}`" class="label label-columns">Column {{ i + 1 }}</label>
-                      <input v-model.trim="column.name" @focus="saveColumnName(column.name)" @blur="handleColumnInput($event, element.id, i)" type="text" :name="`${element.name}Col${i}-${element.id}`" :id="`${element.name}Col${i}-${element.id}`" :placeholder="`Column ${i + 1}`" class="input">
-                      <button @click="deleteTableColumn(element.id, i)" type="button" class="button-delete button-delete-grid-item">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="icon">
-                          <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
-                        </svg>
-                      </button>
-                    </div>
-                  </div>
-                  <button @click="addTableColumn(element.id)" type="button" :id="`${element.name}ColumnBtn-${element.id}`" class="button-add">+ Col</button>
-                </fieldset>
-              </div>
-              <!-- ROWS -->
-              <div class="row">
-                <fieldset class="fieldset">
-                  <legend class="label label-legend">Rows</legend>
-                  <div v-if="element.rows" class="grid">
-                    <!-- Loop through rows -->
-                    <div v-for="(row, i) in element.rows" :key="`${element.name}Rows-${element.id}`" class="grid-item grid-item-rows">
-                      <label class="label label-rows">Row {{ i + 1 }}</label>
-                      <!-- Loop through cells according to columns -->
-                      <div class="grid-nested">
-                        <template v-for="(cell, j) in element.columns">
-                          <label :for="`${element.name}Row${i}-Col${j}-${element.id}`" class="label-visually-hidden"></label>
-                          <input v-model.trim="row[`${element.columns[j].name}`]" type="text" :name="`${element.name}Row${i}-Col${j}-${element.id}`" :id="`${element.name}Row${i}-Col${j}-${element.id}`" :placeholder="element.columns[j].name" class="input grid-nested-item">
-                        </template>
-                      </div>
-                      <button @click="deleteTableRow(element.id, i)" type="button" class="button-delete button-delete-grid-item">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="icon">
-                          <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
-                        </svg>
-                      </button>
-                    </div>
-                  </div>
-                  <button @click="addTableRow(element.id)" type="button" class="button-add">+ Row</button>
-                </fieldset>
-              </div>
-            </template>
-            <!-- HEADING / PARAGRAPH / SUBHEADING / SUMMARY SECTION -->
-            <template v-else>
-              <div class="row">
-                <label :for="`${element.name}Content-${element.id}`" class="label">Content</label>
-                <textarea v-model.trim="element.value" :name="`${element.name}Content-${element.id}`" :id="`${element.name}Content-${element.id}`" class="textarea"></textarea>
-              </div>
-            </template>
-            <!-- DELETE SECTION -->
-            <div class="row">
-              <button
-                @click="handleDelete(element)"
-                type="button"
-                class="button-delete">
-                Delete
+          <div class="main">
+            <div class="section section-collapsed" :data-section-collapsed="element.id">
+              <!-- EXPAND SECTION -->
+              <button @click="collapseSection(element.id)" type="button" class="button-collapse">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="icon">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                </svg>
               </button>
+              <div class="row">
+                
+                <span class="label-collapsed"> {{ `${element.name}` || `No section chosen.` }}</span>
+              </div>
+            </div>
+
+            <div class="section section-expanded" :data-section-expanded="element.id">
+              <!-- COLLAPSE SECTION -->
+              <button @click="collapseSection(element.id)" type="button" class="button-collapse">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="icon">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5" />
+                </svg>
+              </button>
+              <!-- SELECT SECTION -->
+              <div class="row">
+                <label :for="`name-${element.id}`" class="label">Section</label>
+                <select
+                  v-model="element.name" :name="`name-${element.id}`" :id="`name-${element.id}`"
+                  @focus="setPreviousSelect($event.target.value)"
+                  @change="handleNewSelect($event.target.value, element.id)"
+                  class="select">
+                  <option value selected disabled >Choose A Section</option>
+                  <option
+                    v-for="(section, i) in state.sectionsToSelect"
+                    :key="i"
+                    :value="section.name"
+                    :disabled="section.disabled">{{ section.name }}</option>
+                </select>
+              </div>
+              <!-- NO SECTION YET -->
+              <template v-if="element.name === ''">
+                <div class="row">
+                  <p class="paragraph">Please remember to choose a section.</p>
+                </div>
+              </template>
+              <!-- IMAGE SECTION -->
+              <template v-else-if="element.name === 'image'">
+                <!-- Button to choose image -->
+                <div class="row">
+                  <label :for="`imageFile_${element.id}`" class="label label-file">
+                    <span>Choose Image</span>
+                  </label>
+                  <input
+                    @change="handleImage($event.target.files, element.id)"
+                    type="file"
+                    :name="`imageFile_${element.id}`"
+                    :id="`imageFile_${element.id}`"
+                    accept="image/*"
+                    class="input-file">
+                </div>
+                <!-- Preview with progress bar -->
+                <div class="row">
+                  <img src="" :id="`imagePreview-${element.id}`" class="image">
+                </div>
+                <!-- Name -->
+                <!-- <div></div> -->
+                <!-- Alt text -->
+                <div class="row">
+                  <label :for="`imageAlt-${element.id}`" class="label">Alternative text</label>
+                  <textarea
+                    v-model.trim="element.alt"
+                    :name="`imageAlt-${element.id}`"
+                    :id="`imageAlt-${element.id}`"
+                    class="textarea"></textarea>
+                </div>
+                <!-- Title image -->
+                <div class="row">
+                  <label :for="`imageTitleImage-${element.id}`" class="label checkbox">
+                    <span class="label-checkbox-text">Title image</span>
+                    <input
+                      v-model="element.is_title_image"
+                      @change="handleCheckboxAction($event.target._modelValue, element.id)"
+                      type="checkbox"
+                      :name="`imageTitleImage-${element.id}`"
+                      :id="`imageTitleImage-${element.id}`">
+                  </label>
+                </div>
+              </template>
+              <!-- LISTARRAY SECTION -->
+              <template v-else-if="element.name === 'listarray'">
+                <div class="row">
+                  <fieldset class="fieldset">
+                    <legend class="label label-legend">Items</legend>
+                    <div class="container">
+                      <!-- Loop through items -->
+                      <div v-for="(item, i) in element.items" :key="`${element.name}Items-${element.id}`" class="container-item">
+                        <label :for="`${element.name}Items-${element.id}-Item${i}`" class="label container-item-label">{{ i + 1 }}</label>
+                        <textarea v-model.trim="item.value" :name="`${element.name}Items-${element.id}-Item${i}`" :id="`${element.name}Items-${element.id}-Item${i}`"  class="textarea container-item-textarea"></textarea>
+                        <button @click="deleteListArrayItem(element.id, i)" type="button" class="button-delete">
+                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="icon">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+                          </svg>
+                        </button>
+                      </div>
+                      <button @click="addListArrayItem(element.id)" type="button" class="button-add">+ Item</button>
+                    </div>
+                  </fieldset>
+                </div>
+              </template>
+              <!-- TABLE SECTION -->
+              <template v-else-if="element.name === 'table'">
+                <!-- COLUMNS -->
+                <div class="row">
+                  <fieldset class="fieldset">
+                    <legend class="label label-legend">Columns</legend>
+                    <div v-if="element.columns" class="grid">
+                      <!-- Loop through columns -->
+                      <div v-for="(column, i) in element.columns"
+                        :key="`${element.name}Cols-${element.id}`" class="grid-item grid-item-columns">
+                        <label :for="`${element.name}Col${i}-${element.id}`" class="label label-columns">Column {{ i + 1 }}</label>
+                        <input v-model.trim="column.name" @focus="saveColumnName(column.name)" @blur="handleColumnInput($event, element.id, i)" type="text" :name="`${element.name}Col${i}-${element.id}`" :id="`${element.name}Col${i}-${element.id}`" :placeholder="`Column ${i + 1}`" class="input">
+                        <button @click="deleteTableColumn(element.id, i)" type="button" class="button-delete button-delete-grid-item">
+                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="icon">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+                    <button @click="addTableColumn(element.id)" type="button" :id="`${element.name}ColumnBtn-${element.id}`" class="button-add">+ Col</button>
+                  </fieldset>
+                </div>
+                <!-- ROWS -->
+                <div class="row">
+                  <fieldset class="fieldset">
+                    <legend class="label label-legend">Rows</legend>
+                    <div v-if="element.rows" class="grid">
+                      <!-- Loop through rows -->
+                      <div v-for="(row, i) in element.rows" :key="`${element.name}Rows-${element.id}`" class="grid-item grid-item-rows">
+                        <label class="label label-rows">Row {{ i + 1 }}</label>
+                        <!-- Loop through cells according to columns -->
+                        <div class="grid-nested">
+                          <template v-for="(cell, j) in element.columns">
+                            <label :for="`${element.name}Row${i}-Col${j}-${element.id}`" class="label-visually-hidden"></label>
+                            <input v-model.trim="row[`${element.columns[j].name}`]" type="text" :name="`${element.name}Row${i}-Col${j}-${element.id}`" :id="`${element.name}Row${i}-Col${j}-${element.id}`" :placeholder="element.columns[j].name" class="input grid-nested-item">
+                          </template>
+                        </div>
+                        <button @click="deleteTableRow(element.id, i)" type="button" class="button-delete button-delete-grid-item">
+                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="icon">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+                    <button @click="addTableRow(element.id)" type="button" class="button-add">+ Row</button>
+                  </fieldset>
+                </div>
+              </template>
+              <!-- HEADING / PARAGRAPH / SUBHEADING / SUMMARY SECTION -->
+              <template v-else>
+                <div class="row">
+                  <label :for="`${element.name}Content-${element.id}`" class="label">Content</label>
+                  <textarea v-model.trim="element.value" :name="`${element.name}Content-${element.id}`" :id="`${element.name}Content-${element.id}`" class="textarea"></textarea>
+                </div>
+              </template>
+              <!-- DELETE SECTION -->
+              <div class="row">
+                <button
+                  @click="handleDelete(element)"
+                  type="button"
+                  class="button-delete">
+                  Delete
+                </button>
+              </div>
             </div>
           </div>
         </template>
