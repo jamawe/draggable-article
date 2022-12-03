@@ -1,12 +1,26 @@
 :root {
+  --textColor: rgba(255, 255, 255, 0.87);
+  --surface1: #141414;
+  --surface2: #242424;
+
+  --border: #999999;
+
+  --accent: #1B4474;
+  --accent-hover: #193E69;
+  --accent-toned: #4B77AA;
+  --accent-toned-hover: #335E8F;
+
+  --error: #e1566f;
+  --help: #989898;
+
   font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
   font-size: 1rem;
   line-height: 24px;
   font-weight: 400;
 
   color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  color: var(--textColor);
+  background-color: var(--surface1);
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -19,36 +33,18 @@
   box-sizing: border-box;
 }
 
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
-}
-
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
-}
-
 body {
   margin: 0;
   display: flex;
   place-items: center;
-  /* min-width: 320px; */
+  min-width: 320px;
   min-height: 100vh;
 }
 
-h1 {
+/* h1 {
   font-size: 3.2em;
   line-height: 1.1;
-}
+} */
 
 /* button {
   border-radius: 8px;
@@ -69,9 +65,9 @@ button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
 } */
 
-.card {
+/* .card {
   padding: 2em;
-}
+} */
 
 #app {
   max-width: 1280px;
@@ -82,14 +78,21 @@ button:focus-visible {
 
 @media (prefers-color-scheme: light) {
   :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
+    --textColor: #242424;
+    --surface1: #F5F5F5;
+    --surface2: #FEFEFE;
+
+    --input-background: #EBEBEB;
+    --border: #a8a8a8;
+
+    --accent: #7BAAE0;
+    --accent-toned: #BDD2ED;
+
+    --error: #B00020;
+    --help: #828282;
+
+    color: var(--textColor);
+    background-color: var(--surface1);
   }
 }
 
@@ -118,8 +121,11 @@ button:focus-visible {
 }
 
 .form-button {
-  padding-top: .5rem;
-  padding-bottom: .5rem;
+  background-color: var(--accent);
+  font-size: 14px;
+  font-weight: bold;
+  padding-top: .75rem;
+  padding-bottom: .75rem;
   padding-left: 1.75rem;
   padding-right: 1.75rem;
   margin-top: 1.5rem;
@@ -129,14 +135,20 @@ button:focus-visible {
   border-radius: 25rem;
   border: none;
   width: min(100%, 400px);
+  cursor: pointer;
+}
+
+.form-button:hover {
+  background-color: var(--accent-hover);
 }
 
 .section {
   position: relative;
   display: flex;
   flex-direction: column;
+  background-color: var(--surface2);
   padding: .5rem;
-  border: 1.5px solid #DDD; /* TODO */
+  border: 1.5px solid var(--border);
   border-radius: .25rem;
   margin-top: 1.5rem;
   margin-bottom: 1.5rem;
@@ -178,12 +190,19 @@ button:focus-visible {
 
 .label-file {
   align-self: center;
-  background-color:rgba(121, 46, 46, 0.87); /* TODO */
+  display: grid;
+  place-items: center;
+  background-color: var(--accent-toned);
+  font-size: 14px;
   letter-spacing: normal;
-  padding: .5rem 1.5rem;
-  margin-top: .5rem;
+  padding: .375rem 1.75rem;
   border-radius: 25rem;
+  width: min(100%, 400px);
   cursor: pointer;
+}
+
+.label-file:hover {
+  background-color: var(--accent-toned-hover);
 }
 
 .label-legend {
@@ -223,7 +242,6 @@ button:focus-visible {
 }
 
 .select:hover {
-  border: .0625rem solid green; /* TODO */
   cursor: pointer;
 }
 
@@ -233,7 +251,7 @@ button:focus-visible {
   padding-left: .5rem;
   padding-right: .5rem;
   width: 100%;
-  border: .0625rem solid #DDD; /* TODO */
+  border: .0625rem solid var(--border);
   border-radius: .25rem;
   margin-bottom: .5rem;
 }
@@ -264,7 +282,7 @@ button:focus-visible {
   display: flex;
   flex-direction: column;
   border: none;
-  border-top: solid 1px #DDD;
+  border-top: solid 1px var(--border);
   padding: 0;
   margin: 0;
   width: 100%;
@@ -328,9 +346,11 @@ button:focus-visible {
 }
 
 .button-add {
-  background-color:rgba(121, 46, 46, 0.87); /* TODO */
+  background-color: var(--accent-toned);
+  font-size: 14px;
+  font-weight: bold;
   letter-spacing: normal;
-  padding: .5rem 1.5rem;
+  padding: .625rem 1.75rem;
   margin-top: .5rem;
   margin-left: auto;
   margin-right: auto;
@@ -341,8 +361,7 @@ button:focus-visible {
 }
 
 .button-add:hover {
-  color: blue; /* TODO */
-  cursor: pointer;
+  background-color: var(--accent-toned-hover);
 }
 
 .button-collapse {
@@ -356,7 +375,7 @@ button:focus-visible {
 }
 
 .button-delete {
-  color: #DDD; /* TODO */
+  color: var(--help);
   font-weight: bold;
   background-color: transparent;
   text-transform: uppercase;
@@ -366,7 +385,7 @@ button:focus-visible {
 }
 
 .button-delete:hover {
-  color: red; /* TODO */
+  color: var(--error);
   cursor: pointer;
 }
 

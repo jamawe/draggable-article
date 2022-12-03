@@ -781,7 +781,7 @@ disableSectionsBasedOnArticle();
           @click="addSection"
           type="button"
           class="form-button">
-            Add Section
+            New Section
         </button>
       </div>
       <!-- {{articleForForm}} -->
