@@ -1,6 +1,7 @@
 <script setup>
 // This starter template is using Vue 3 <script setup> SFCs
 // Check out https://vuejs.org/api/sfc-script-setup.html#script-setup
+import ArticleDisplay from './components/ArticleDisplay.vue';
 import draggable from 'vuedraggable';
 import { generateId } from './modules/_helpers.mjs';
 
@@ -556,8 +557,9 @@ const articleForDisplay = computed(() => {
 
     // Table section
     if (element.name === 'table' && element.columns) {
+      console.log('%chas table', 'color: darkseagreen; font-weight: bold;');
       // Save columns object prop 'name' as string in new array
-      section.tableHead = element.columns.map(({ name }) => name);
+      section.table_head = element.columns.map(({ name }) => name);
 
       if (element.rows?.length) {
         section.rows = [];
@@ -572,6 +574,7 @@ const articleForDisplay = computed(() => {
           section.rows.push(row);
         }
       }
+      console.log('%csection table', 'color: darkseagreen; font-weight: bold;', section);
       return section;
     }
 
@@ -784,12 +787,10 @@ disableSectionsBasedOnArticle();
             New Section
         </button>
       </div>
-      <!-- {{articleForForm}} -->
-      <!-- {{ articleForDisplay }} -->
     </div>
     
-    <div class="article__container__display">
-      {{ articleForDisplay }}
+    <div class="preview">
+      <ArticleDisplay :articleForDisplay="articleForDisplay"/>
     </div>
   </div>
 </template>
